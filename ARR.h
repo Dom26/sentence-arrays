@@ -47,11 +47,12 @@ class ARR{
     ARR(const ARR&);
     ~ARR();
     int insert(char*);
-    int destroy_array();
+    int remove_sentence(int);
     void display_array();
   private:
     LLL * list;
     int size;
     int read_sentence(char*,int);
     int insert_to_list(char*,int,int,int);
+    int destroy_array();
 };

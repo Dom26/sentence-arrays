@@ -244,7 +244,7 @@ ARR::ARR(const ARR& to_copy):size(to_copy.size)
 // array destructor
 ARR::~ARR()
 {
-
+  destroy_array();
 }
 
 // inserting into the array
@@ -306,4 +306,44 @@ int ARR::insert_to_list(char* sentence,int list_num,int start,int end)
   // Give word the null terminating character
   word[end+1] = '\0'; 
   return list[list_num].insert(word);
+}
+
+// search for a list and call a list function
+// to delete that list
+int ARR::remove_sentence(int to_remove)
+{
+  // Checking that the passed in number is within range
+  if(to_remove < 0 || to_remove >= size)
+    return 0;
+  int removed = 0;
+  for(int i=0;(i<size) && (!removed);++i)
+  {
+    if(i == to_remove)
+    {
+      list[i].destroy_list();
+      removed = 1;
+    }
+  }
+  return removed;
+}
+
+// Deallocate array function
+int ARR::destroy_array()
+{
+  int destroyed = 0;
+  for(int i=0;i<size;++i)
+  {
+    destroyed += list[i].destroy_list();
+  }
+  delete[] list;
+  return destroyed;
+}
+
+// Display the sentences
+void ARR::display_array()
+{
+  for(int i=0;i<size;++i)
+  {
+    list[i].display_list();
+  }
 }
