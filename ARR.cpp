@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const int NUM_OF_LETTERS = 1024;
+const int NUM_OF_LETTERS = 512;
 
 // Node Implementation:
 
@@ -36,7 +36,7 @@ Node::Node(const Node & to_copy):next(NULL)
 // Node destructor
 Node::~Node()
 {
-  if(word != NULL)
+  if(word)
     delete[] word;
 }
 
@@ -93,6 +93,8 @@ int Node::change_word(char * w)
 // print the word contained in node
 void Node::display_word()
 {
+  if(!word)
+    return;
   cout << word;
 }
 // Linear Linked List (LLL) Implementation:
@@ -130,6 +132,7 @@ int LLL::insert(char* w)
   else if(!tail)            // check for only one item in list
   {
     tail = new Node(w);
+    head->setNext(tail,1);
   }
   else                      // insert at tail
   {
@@ -157,6 +160,7 @@ int LLL::destroy_list(Node*& cur)
   int destroyed = 0;
   destroyed += destroy_list(cur->getNext());
   delete cur;
+  cur = NULL;
   return destroyed;
 }
 
@@ -210,10 +214,17 @@ void LLL::display_list()
 // Recursively display LLL
 void LLL::display_list(Node *cur)
 {
+  if(!cur)
+    return;
   if(cur == tail)
   {
-    cur->display_word();
-    cout << endl;
+    if(!cur)
+      cout << endl;
+    else
+    {
+      cur->display_word();
+      cout << endl;
+    }
   }
   else
   {
@@ -275,15 +286,31 @@ int ARR::read_sentence(char* sentence,int list_num)
   int place_holder = 0;
   int first_letter = 0;
   int adds = 0;
-  char word[NUM_OF_LETTERS] = {' '};
-  for(int i=0;i < strlen(sentence);++i)
+  int length = strlen(sentence);
+  char word[NUM_OF_LETTERS];
+
+  for(int j=0;j<NUM_OF_LETTERS;++j)
+    word[j] = ' ';
+
+  for(int i=0;i < length;++i)
   {
-    if((sentence[i] == ' ') || (i == (strlen(sentence)-1)))
+    if(sentence[i] == ' ')
     {
       // Call a function that takes the word out of the
       // sentence
       adds += insert_to_list(word,list_num,first_letter,place_holder);
-      first_letter = place_holder;
+      // clear the "word" for reuse
+      // No need to set word[0] to ' ' because
+      // it will get overwritten
+      for(;place_holder>0;--place_holder)
+        word[place_holder] = ' ';
+      //first_letter = place_holder;
+    }
+    else if(i == (length-1))
+    {
+      word[place_holder] = sentence[i];
+      ++place_holder;
+      adds += insert_to_list(word,list_num,first_letter,place_holder);
     }
     else
     {
@@ -291,6 +318,7 @@ int ARR::read_sentence(char* sentence,int list_num)
       ++place_holder;
     }
   }
+  return 1;
 }
 
 // take a word out of a sentence and insert in list
@@ -298,13 +326,22 @@ int ARR::read_sentence(char* sentence,int list_num)
 // the word ends.
 int ARR::insert_to_list(char* sentence,int list_num,int start,int end)
 {
+  int length = (end - start) + 1;
   // end - start = difference between first and last letter
   // + 2 = the last letter and the null terminating character
-  char word[end-start+2] = {' '};
-  for(int i=start;i<=end;++i)
-    word[i] = sentence[i];
+  int j = 0;
+  char word[length];
+
+  for(int k=0;k<length;++k)
+    word[k] = ' ';
+
+  for(int i=start;i<end;++i)
+  {
+    word[j] = sentence[i];
+    ++j;
+  }
   // Give word the null terminating character
-  word[end+1] = '\0'; 
+  word[length-1] = '\0'; 
   return list[list_num].insert(word);
 }
 
@@ -333,7 +370,8 @@ int ARR::destroy_array()
   int destroyed = 0;
   for(int i=0;i<size;++i)
   {
-    destroyed += list[i].destroy_list();
+    if(list[i].check_list() != 0)
+      destroyed += list[i].destroy_list();
   }
   delete[] list;
   return destroyed;
@@ -344,6 +382,7 @@ void ARR::display_array()
 {
   for(int i=0;i<size;++i)
   {
-    list[i].display_list();
+    if(list[i].check_list() != 0)
+      list[i].display_list();
   }
 }
